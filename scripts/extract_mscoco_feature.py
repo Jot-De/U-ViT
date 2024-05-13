@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/jandubinski123/U-ViT")
+
 import torch
 import os
 import numpy as np
@@ -7,7 +10,6 @@ from datasets import MSCOCODatabase
 import argparse
 from tqdm import tqdm
 
-
 def main(resolution=256):
     parser = argparse.ArgumentParser()
     parser.add_argument('--split', default='train')
@@ -16,22 +18,22 @@ def main(resolution=256):
 
 
     if args.split == "train":
-        datas = MSCOCODatabase(root='assets/datasets/coco/train2014',
-                             annFile='assets/datasets/coco/annotations/captions_train2014.json',
+        datas = MSCOCODatabase(root='../assets/datasets/coco/train2014',
+                             annFile='../assets/datasets/coco/annotations/captions_train2014.json',
                              size=resolution)
-        save_dir = f'assets/datasets/coco{resolution}_features/train'
+        save_dir = f'../assets/datasets/coco{resolution}_features/train'
     elif args.split == "val":
-        datas = MSCOCODatabase(root='assets/datasets/coco/val2014',
-                             annFile='assets/datasets/coco/annotations/captions_val2014.json',
+        datas = MSCOCODatabase(root='../assets/datasets/coco/val2014',
+                             annFile='../assets/datasets/coco/annotations/captions_val2014.json',
                              size=resolution)
-        save_dir = f'assets/datasets/coco{resolution}_features/val'
+        save_dir = f'../assets/datasets/coco{resolution}_features/val'
     else:
         raise NotImplementedError("ERROR!")
 
     device = "cuda"
-    os.makedirs(save_dir)
+    os.makedirs(save_dir, exist_ok=True)
 
-    autoencoder = libs.autoencoder.get_model('assets/stable-diffusion/autoencoder_kl.pth')
+    autoencoder = libs.autoencoder.get_model('/home/jandubinski123/model_checkpoints/uvit/autoencoder_kl.pth')
     autoencoder.to(device)
     clip = libs.clip.FrozenCLIPEmbedder()
     clip.eval()

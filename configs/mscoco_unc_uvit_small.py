@@ -20,7 +20,8 @@ def get_config():
     config.train = d(
         n_steps=1000000,
         batch_size=256,
-        log_interval=323,
+        mode='uncond',
+        log_interval=10,
         eval_interval=5000,
         save_interval=50000,
     )
@@ -38,7 +39,7 @@ def get_config():
     )
 
     config.nnet = d(
-        name='uvit_t2i',
+        name='uvit',
         img_size=32,
         in_chans=4,
         patch_size=2,
@@ -48,14 +49,13 @@ def get_config():
         mlp_ratio=4,
         qkv_bias=False,
         mlp_time_embed=False,
-        clip_dim=768,
-        num_clip_token=77
+        num_classes=-1,
     )
 
     config.dataset = d(
         name='mscoco256_features',
-        path='/home/jandubinski123/assets/datasets/coco256_features',
-        cfg=True,
+        path="/home/jandubinski123/assets/datasets/coco256_features",
+        cfg=False,
         p_uncond=0.1
     )
 
@@ -63,7 +63,7 @@ def get_config():
         sample_steps=50,
         n_samples=30000,
         mini_batch_size=50,
-        cfg=True,
+        cfg=False,
         scale=1.,
         path=''
     )

@@ -25,6 +25,17 @@ class UnlabeledDataset(Dataset):
             data = data[0]
         return data
 
+class COCOUnlabeledDataset(Dataset):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, item):
+        data, _ = self.dataset[item]
+        return data
+
 
 class LabeledDataset(Dataset):
     def __init__(self, dataset, labels):
@@ -493,6 +504,23 @@ class MSCOCOFeatureDataset(Dataset):
         return z, c
 
 
+class MSCOCOUncondDataset(Dataset):
+    # the image features are got through sample
+    def __init__(self, root):
+        self.root = root
+        self.num_data, self.n_captions = get_feature_dir_info(root)
+
+    def __len__(self):
+        return self.num_data
+
+    def __getitem__(self, index):
+        z = np.load(os.path.join(self.root, f'{index}.npy'))
+        k = random.randint(0, self.n_captions[index] - 1)
+        c = np.load(os.path.join(self.root, f'{index}_{k}.npy'))
+        return z, c
+    
+
+
 class MSCOCO256Features(DatasetFactory):  # the moments calculated by Stable Diffusion image encoder & the contexts calculated by clip
     def __init__(self, path, cfg=False, p_uncond=None):
         super().__init__()
@@ -525,7 +553,47 @@ class MSCOCO256Features(DatasetFactory):  # the moments calculated by Stable Dif
 
     @property
     def fid_stat(self):
-        return f'assets/fid_stats/fid_stats_mscoco256_val.npz'
+        return f'/home/jandubinski123/assets/fid_stats/fid_stats_mscoco256_val.npz'
+
+
+class MSCOCO256Uncond(DatasetFactory):  # the moments calculated by Stable Diffusion image encoder & the contexts calculated by clip
+    def __init__(self, path, cfg=False, p_uncond=None):
+        super().__init__()
+        print('Prepare dataset...')
+        self.train = MSCOCOUncondDataset(os.path.join(path, 'train'))
+        self.train = COCOUnlabeledDataset(self.train)
+        self.test = MSCOCOUncondDataset(os.path.join(path, 'val'))
+        self.test = COCOUnlabeledDataset(self.test)
+
+        print(len(self.train), len(self.test))
+        assert len(self.train) == 82783
+        assert len(self.test) == 40504
+        print('Prepare dataset ok')
+
+        self.empty_context = np.load(os.path.join(path, 'empty_context.npy'))
+
+        print(cfg)
+        if cfg:  # classifier free guidance
+            assert p_uncond is not None
+            print(f'prepare the dataset for classifier free guidance with p_uncond={p_uncond}')
+            self.train = CFGDataset(self.train, p_uncond, self.empty_context)
+
+        # text embedding extracted by clip
+        # for visulization in t2i
+        self.prompts, self.contexts = [], []
+        for f in sorted(os.listdir(os.path.join(path, 'run_vis')), key=lambda x: int(x.split('.')[0])):
+            prompt, context = np.load(os.path.join(path, 'run_vis', f), allow_pickle=True)
+            self.prompts.append(prompt)
+            self.contexts.append(context)
+        self.contexts = np.array(self.contexts)
+
+    @property
+    def data_shape(self):
+        return 4, 32, 32
+
+    @property
+    def fid_stat(self):
+        return f'/home/jandubinski123/assets/fid_stats/fid_stats_mscoco256_val.npz'
 
 
 def get_dataset(name, **kwargs):
@@ -541,5 +609,7 @@ def get_dataset(name, **kwargs):
         return CelebA(**kwargs)
     elif name == 'mscoco256_features':
         return MSCOCO256Features(**kwargs)
+    elif name == 'mscoco256_uncond_features':
+        return MSCOCO256Uncond(**kwargs)
     else:
         raise NotImplementedError(name)

@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/jandubinski123/U-ViT")
+
 import torch
 import os
 import numpy as np
@@ -18,7 +21,7 @@ def main():
     clip.eval()
     clip.to(device)
 
-    save_dir = f'assets/datasets/coco256_features'
+    save_dir = f'/home/jandubinski123/assets/datasets/coco256_features'
     latent = clip.encode(prompts)
     print(latent.shape)
     c = latent[0].detach().cpu().numpy()
