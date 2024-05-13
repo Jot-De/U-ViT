@@ -21,9 +21,9 @@ def get_config():
         n_steps=1000000,
         batch_size=256,
         mode='uncond',
-        log_interval=10,
-        eval_interval=5000,
-        save_interval=50000,
+        log_interval=323,
+        eval_interval=100000,
+        save_interval=100000,
     )
 
     config.optimizer = d(
