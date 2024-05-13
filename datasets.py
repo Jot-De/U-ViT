@@ -515,9 +515,9 @@ class MSCOCOUncondDataset(Dataset):
 
     def __getitem__(self, index):
         z = np.load(os.path.join(self.root, f'{index}.npy'))
-        k = random.randint(0, self.n_captions[index] - 1)
-        c = np.load(os.path.join(self.root, f'{index}_{k}.npy'))
-        return z, c
+        #k = random.randint(0, self.n_captions[index] - 1)
+        #c = np.load(os.path.join(self.root, f'{index}_{k}.npy'))
+        return z, 0
     
 
 
