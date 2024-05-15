@@ -518,6 +518,24 @@ class MSCOCOUncondDataset(Dataset):
         #k = random.randint(0, self.n_captions[index] - 1)
         #c = np.load(os.path.join(self.root, f'{index}_{k}.npy'))
         return z, 0
+
+class MSCOCOCondDataset(Dataset):
+    # the image features are got through sample
+    def __init__(self, root):
+        self.root = root
+        self.num_data, self.n_captions = get_feature_dir_info(root)
+
+    def __len__(self):
+        return self.num_data
+
+    def _load_target(self, key: int):
+        return self.coco.loadCats(self.coco.getCatIds(key))
+
+    def __getitem__(self, index):
+        z = np.load(os.path.join(self.root, f'{index}.npy'))
+        key = self.keys[index]
+        label = self._load_target(key)
+        return z, labels
     
 
 
